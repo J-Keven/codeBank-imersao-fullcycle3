@@ -67,6 +67,32 @@ func (tr *TransactionRepositoryDB) updateBalance(creditCard domain.CreditCard) e
 
 }
 
+func (t *TransactionRepositoryDB) CreateCreditCard(creditCard domain.CreditCard) error {
+	stmt, err := t.db.Prepare(`insert into credit_cards(id, name, number, expiration_month,expiration_year, CVV,balance, balance_limit) 
+								values($1,$2,$3,$4,$5,$6,$7,$8)`)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(
+		creditCard.ID,
+		creditCard.Name,
+		creditCard.Number,
+		creditCard.ExpirationMonth,
+		creditCard.ExpirationYear,
+		creditCard.CVV,
+		creditCard.Balance,
+		creditCard.Limit,
+	)
+	if err != nil {
+		return err
+	}
+	err = stmt.Close()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (tr *TransactionRepositoryDB) GetCreditCard(creditCard domain.CreditCard) (domain.CreditCard, error) {
 	var c domain.CreditCard
 	stmt, err := tr.db.Prepare("select id, balance, balance_limit from credit_cards where number=$1")
@@ -78,6 +104,3 @@ func (tr *TransactionRepositoryDB) GetCreditCard(creditCard domain.CreditCard) (
 	}
 	return c, nil
 }
-
-// GetCreditCard(CreditCard CreditCard) (CreditCard, error)
-// CreateCreditCard(creditCard CreditCard) (CreditCard, error)

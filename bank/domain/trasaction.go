@@ -9,7 +9,7 @@ import (
 type ITransactionRepository interface {
 	SaveTransaction(transaction Transaction, creditCard CreditCard) error
 	GetCreditCard(CreditCard CreditCard) (CreditCard, error)
-	CreateCreditCard(creditCard CreditCard) (CreditCard, error)
+	CreateCreditCard(creditCard CreditCard) error
 }
 
 type Transaction struct {

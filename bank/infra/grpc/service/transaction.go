@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	usecases "github.com/j-keven/codeBank/UseCases"
@@ -31,13 +32,14 @@ func (t *TransactionService) Payment(ctx context.Context, in *pb.PaymentRequest)
 		Amount:          in.GetAmount(),
 		Description:     in.GetDescritpion(),
 	}
-	// example
+
 	transaction, err := t.ProcessTransactionUseCase.ProcessTransaction(transactionDto)
 
 	if err != nil {
 		return &empty.Empty{}, status.Error(codes.FailedPrecondition, err.Error())
 	}
 
+	fmt.Println(transaction)
 	if transaction.Status != "approved" {
 		return &empty.Empty{}, status.Error(codes.FailedPrecondition, err.Error())
 	}

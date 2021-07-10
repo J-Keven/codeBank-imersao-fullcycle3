@@ -1,6 +1,8 @@
 package kafka
 
 import (
+	"log"
+
 	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
@@ -12,8 +14,13 @@ func NewProducerKafka() KafkaProducer {
 	return KafkaProducer{}
 }
 
+// altera diretamente a classe
 func (k *KafkaProducer) SetupProducer(bootstrapSerever string) {
-	k.Producer, _ = ckafka.NewProducer(&ckafka.ConfigMap{"bootstrap.servers": bootstrapSerever})
+	var err error
+	k.Producer, err = ckafka.NewProducer(&ckafka.ConfigMap{"bootstrap.servers": bootstrapSerever})
+	if err != nil {
+		log.Fatalln("Error to connect in kafka", err)
+	}
 }
 
 func (k *KafkaProducer) Publish(msg string, topic string) error {

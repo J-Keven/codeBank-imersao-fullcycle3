@@ -17,7 +17,7 @@ func NewUseCaseTransaction(transactionRepository domain.ITransactionRepository) 
 	return UseCaseTransaction{TransactionRepository: transactionRepository}
 }
 
-func (u UseCaseTransaction) ProcessTransaction(transactionDTO dto.Transaction) (domain.Transaction, error) {
+func (u *UseCaseTransaction) ProcessTransaction(transactionDTO dto.Transaction) (domain.Transaction, error) {
 	creditCard := u.hydrateCreditCard(transactionDTO)
 	ccBalanceAndLimit, err := u.TransactionRepository.GetCreditCard(*creditCard)
 
@@ -34,7 +34,7 @@ func (u UseCaseTransaction) ProcessTransaction(transactionDTO dto.Transaction) (
 	err = u.TransactionRepository.SaveTransaction(*t, *creditCard)
 
 	if err != nil {
-		return domain.Transaction{}, nil
+		return domain.Transaction{}, err
 	}
 
 	transactionDTO.ID = t.ID
@@ -46,7 +46,7 @@ func (u UseCaseTransaction) ProcessTransaction(transactionDTO dto.Transaction) (
 		return domain.Transaction{}, err
 	}
 
-	err = u.KafkaProducer.Publish(string(transactionJson), "payments")
+	err = u.KafkaProducer.Publish(string(transactionJson), "Payments")
 
 	if err != nil {
 		return domain.Transaction{}, err
@@ -54,7 +54,7 @@ func (u UseCaseTransaction) ProcessTransaction(transactionDTO dto.Transaction) (
 	return *t, nil
 }
 
-func (u UseCaseTransaction) hydrateCreditCard(transactionDTO dto.Transaction) *domain.CreditCard {
+func (u *UseCaseTransaction) hydrateCreditCard(transactionDTO dto.Transaction) *domain.CreditCard {
 	creditCard := domain.NewCreditCard()
 	creditCard.Name = transactionDTO.Name
 	creditCard.Number = transactionDTO.Number
@@ -65,13 +65,16 @@ func (u UseCaseTransaction) hydrateCreditCard(transactionDTO dto.Transaction) *d
 	return creditCard
 }
 
-func (u UseCaseTransaction) newTransaction(transactionDTO dto.Transaction, cc domain.CreditCard) *domain.Transaction {
+func (u *UseCaseTransaction) newTransaction(transactionDTO dto.Transaction, cc domain.CreditCard) *domain.Transaction {
 	t := domain.NewTransaction()
 	t.Amount = transactionDTO.Amount
 	t.CreditCardId = cc.ID
-	t.Status = transactionDTO.Status
 	t.Store = transactionDTO.Store
 	t.Description = transactionDTO.Description
 
 	return t
+}
+
+func (u *UseCaseTransaction) SetupProducer(kafkaProducer kafka.KafkaProducer) {
+	u.KafkaProducer = kafkaProducer
 }

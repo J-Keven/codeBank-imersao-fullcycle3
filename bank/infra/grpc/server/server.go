@@ -19,7 +19,7 @@ func NewGRPCServer() GRPCServer {
 	return GRPCServer{}
 }
 
-func (g GRPCServer) Serve() {
+func (g *GRPCServer) Serve() {
 	list, err := net.Listen("tcp", "0.0.0.0:50052")
 
 	if err != nil {
